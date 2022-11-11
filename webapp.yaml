@@ -1,0 +1,39 @@
+- name: Install java and download the webapp
+  hosts: all
+  gather_facts: false
+  vars:
+    java_v: java-1.8.0-openjdk
+    set_java: jre-1.8.0-openjdk.x86_64
+  become: 'yes'
+  tasks:
+    - name: Create a directory
+      file:
+        path: /home/ec2-user/packer/ami-packer
+        state: directory
+        mode: 493
+    - name: Updating repos
+      yum:
+        name: '*'
+        state: latest
+    - name: Installing Openjdk
+      yum:
+        name: '{{java_v}}'
+        state: present
+    - name: Download Apache Maven
+      shell: sudo yum install maven -y
+- name: "Copy files"
+  hosts: all
+  become: yes
+  gather_facts: false
+  vars:
+    source: /home/ec2-user/packer/awspacker/webapp
+    dest:  /home/ec2-user/packer/ami-packer
+
+  tasks:
+    - name: "Copy file"
+      copy:
+        src: "{{source}}"
+        dest: "{{dest}}"
+        group: root
+        mode: 777
+

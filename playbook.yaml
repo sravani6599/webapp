@@ -1,0 +1,40 @@
+---
+  - name: Install and configure tomcat
+    hosts: localhost
+    gather_facts: false
+    vars:
+      java_v: java-1.8.0-openjdk
+      set_java: jre-1.8.0-openjdk.x86_64
+      tomcat_port : 8080
+      tomcat_version: 9.0.68
+      tomcat_url: "https://dlcdn.apache.org/tomcat/tomcat-9/v9.0.68/src/apache-tomcat-9.0.68-src.tar.gz"
+    become: yes
+    tasks:
+     - name: Create a directory #this directory is created to download the tomcat tar file
+       file :
+         path : /home/ec2-user/packer/awspacker
+         state : directory
+         mode: 0755 #  allow everyone to read and execute the file, the owner is allowed to write to the file as well
+     - name: Updating repos
+       yum:
+         name: "*"
+         state: latest
+     - name: Installing Openjdk
+       yum:
+         name: "{{java_v}}"
+         state: present
+     - name: Downloading tomcat
+       get_url:
+         url: "{{tomcat_url}}"
+         dest: /home/ec2-user/packer/awspacker
+     - name: Extracting downloaded tar file
+       unarchive:
+         src: "/home/ec2-user/packer/awspacker/apache-tomcat-{{tomcat_version}}-src.tar.gz"
+         dest: /home/ec2-user/packer/awspacker
+         remote_src: yes
+     #perform this task: Renaming tomcat home, once and later comment it
+     - name: Renaming tomcat home
+       command: mv /home/ec2-user/packer/awspacker/apache-tomcat-{{tomcat_version}}-src.tar.gz /home/ec2-user/packer/awspacker/tomcat
+     - name: Starting tomcat
+       #become_user: root #this command was used to give root user access
+       shell: nohup /home/ec2-user/packer/awspacker/tomcat/bin/startup.sh &

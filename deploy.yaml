@@ -1,0 +1,17 @@
+---
+ - name: Deploy war  
+   hosts: localhost
+   tasks:
+     - name: Stop Tomcat  
+       command: /home/ec2-user/packer/awspacker/apache-tomcat-9.0.68-src/webapps/ROOT/shutdown.sh 
+
+     - name: Delete old war  
+       command: rm -rf  /home/ec2-user/packer/awspacker/apache-tomcat-9.0.68-src/webapps/ROOT/
+
+     - name: Copy the war file  
+       copy:  
+         src: /home/ec2-user/packer/ami-packer/webapp/webapp.war 
+         dest: /home/ec2-user/packer/awspacker/apache-tomcat-9.0.68-src/webapps/ROOT/
+
+     - name: Start Tomcat  
+       command: /home/ec2-user/packer/awspacker/tomcat/bin/startup.sh 
